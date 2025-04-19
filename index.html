@@ -1,0 +1,71 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Random Number Generator with Distribution Visualization</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Random Number Generator</h1>
+        
+        <div class="generator-controls">
+            <div class="control-group">
+                <label for="min">Minimum value:</label>
+                <input type="number" id="min" value="1">
+            </div>
+            
+            <div class="control-group">
+                <label for="max">Maximum value:</label>
+                <input type="number" id="max" value="100">
+            </div>
+            
+            <div class="control-group">
+                <label for="count">Number of values:</label>
+                <input type="number" id="count" value="100" min="1">
+            </div>
+            
+            <button id="generate-btn">Generate Numbers</button>
+            <button id="clear-btn">Clear Results</button>
+        </div>
+        
+        <div class="results-container">
+            <h2>Generated Numbers</h2>
+            <div id="numbers-output" class="numbers-output"></div>
+            
+            <div class="visualization-container">
+                <div class="vis-section">
+                    <h2>Frequency Histogram</h2>
+                    <div class="control-group">
+                        <label for="bin-width">Bin Width:</label>
+                        <input type="number" id="bin-width" value="10" min="1">
+                        <button id="update-histogram">Update Histogram</button>
+                    </div>
+                    <div class="chart-container">
+                        <svg id="histogram" width="600" height="300"></svg>
+                    </div>
+                </div>
+                
+                <div class="vis-section">
+                    <h2>Cumulative Distribution</h2>
+                    <div class="control-group">
+                        <label for="x-scale">X-Scale Factor:</label>
+                        <input type="number" id="x-scale" value="1" min="0.1" step="0.1">
+                        
+                        <label for="y-scale">Y-Scale Factor:</label>
+                        <input type="number" id="y-scale" value="1" min="0.1" step="0.1">
+                        
+                        <button id="update-cdf">Update Graph</button>
+                    </div>
+                    <div class="chart-container">
+                        <svg id="cumulative" width="600" height="300"></svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
