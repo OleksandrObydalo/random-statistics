@@ -145,3 +145,22 @@ svg {
 .axis line, .axis path {
     stroke: #ddd;
 }
+
+.statistical-metrics {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 5px;
+    margin-top: 20px;
+    border: 1px solid #ddd;
+}
+
+.statistical-output {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.statistical-output p {
+    margin: 0;
+    font-size: 14px;
+}

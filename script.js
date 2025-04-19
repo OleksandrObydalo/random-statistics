@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const xScaleInput = document.getElementById('x-scale');
     const yScaleInput = document.getElementById('y-scale');
     const updateCdfBtn = document.getElementById('update-cdf');
+    const statisticalOutput = document.getElementById('statistical-output');
 
     // SVG elements
     const histogramSvg = d3.select('#histogram');
@@ -58,6 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
         displayNumbers();
         drawHistogram();
         drawCumulativeDistribution();
+        displayStatistics();
     }
 
     // Display generated numbers with appropriate precision
@@ -246,12 +248,52 @@ document.addEventListener('DOMContentLoaded', () => {
             .text(`Cumulative Distribution (X: ${xScaleFactor}x, Y: ${yScaleFactor}x)`);
     }
 
+    // Add statistical calculations function
+    function calculateStatistics() {
+        if (generatedNumbers.length === 0) {
+            return {
+                mean: 0,
+                variance: 0,
+                standardDeviation: 0
+            };
+        }
+
+        // Calculate Mean (E(X))
+        const mean = generatedNumbers.reduce((sum, num) => sum + num, 0) / generatedNumbers.length;
+
+        // Calculate Variance
+        const variance = generatedNumbers.reduce((sum, num) => {
+            return sum + Math.pow(num - mean, 2);
+        }, 0) / generatedNumbers.length;
+
+        // Calculate Standard Deviation
+        const standardDeviation = Math.sqrt(variance);
+
+        return {
+            mean,
+            variance,
+            standardDeviation
+        };
+    }
+
+    // Display statistical metrics
+    function displayStatistics() {
+        const stats = calculateStatistics();
+
+        statisticalOutput.innerHTML = `
+            <p>Mean (E(X)): ${stats.mean.toFixed(4)}</p>
+            <p>Variance (Var(X)): ${stats.variance.toFixed(4)}</p>
+            <p>Standard Deviation (σ): ${stats.standardDeviation.toFixed(4)}</p>
+        `;
+    }
+
     // Clear all results
     function clearResults() {
         generatedNumbers = [];
         numbersOutput.textContent = '';
         histogramSvg.selectAll('*').remove();
         cumulativeSvg.selectAll('*').remove();
+        statisticalOutput.innerHTML = '';
     }
 
     // Update min and max input types based on distribution type
