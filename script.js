@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     // DOM elements
+    const distributionTypeSelect = document.getElementById('distribution-type');
     const minInput = document.getElementById('min');
     const maxInput = document.getElementById('max');
     const countInput = document.getElementById('count');
@@ -26,8 +27,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Generate random numbers
     function generateRandomNumbers() {
-        const min = parseInt(minInput.value);
-        const max = parseInt(maxInput.value);
+        const distributionType = distributionTypeSelect.value;
+        const min = parseFloat(minInput.value);
+        const max = parseFloat(maxInput.value);
         const count = parseInt(countInput.value);
 
         if (isNaN(min) || isNaN(max) || isNaN(count) || count <= 0) {
@@ -42,7 +44,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         generatedNumbers = [];
         for (let i = 0; i < count; i++) {
-            const randomNum = Math.floor(Math.random() * (max - min + 1) + min);
+            let randomNum;
+            if (distributionType === 'discrete') {
+                // Generate integer numbers
+                randomNum = Math.floor(Math.random() * (max - min + 1) + min);
+            } else {
+                // Generate floating-point numbers
+                randomNum = Math.random() * (max - min) + min;
+            }
             generatedNumbers.push(randomNum);
         }
 
@@ -51,15 +60,23 @@ document.addEventListener('DOMContentLoaded', () => {
         drawCumulativeDistribution();
     }
 
-    // Display generated numbers
+    // Display generated numbers with appropriate precision
     function displayNumbers() {
+        const distributionType = distributionTypeSelect.value;
         generatedNumbers.sort((a, b) => a - b);
-        numbersOutput.textContent = generatedNumbers.join(', ');
+        
+        if (distributionType === 'discrete') {
+            numbersOutput.textContent = generatedNumbers.join(', ');
+        } else {
+            // Show floating-point numbers with 3 decimal places
+            numbersOutput.textContent = generatedNumbers.map(num => num.toFixed(3)).join(', ');
+        }
     }
 
     // Draw histogram
     function drawHistogram() {
-        const binWidth = parseInt(binWidthInput.value) || 10;
+        const distributionType = distributionTypeSelect.value;
+        const binWidth = parseFloat(binWidthInput.value) || 10;
         
         histogramSvg.selectAll('*').remove();
         
@@ -71,17 +88,22 @@ document.addEventListener('DOMContentLoaded', () => {
         const min = Math.min(...generatedNumbers);
         const max = Math.max(...generatedNumbers);
 
+        // Adjust bin width and number of bins for continuous distribution
+        const binWidthAdjusted = distributionType === 'discrete' ? 
+            binWidth : 
+            (max - min) / 20; // Default to 20 bins for continuous
+
         // Create bins
-        const numBins = Math.ceil((max - min) / binWidth);
+        const numBins = Math.ceil((max - min) / binWidthAdjusted);
         const bins = Array(numBins).fill(0);
         
         generatedNumbers.forEach(num => {
-            const binIndex = Math.floor((num - min) / binWidth);
+            const binIndex = Math.floor((num - min) / binWidthAdjusted);
             bins[binIndex]++;
         });
 
         const xScale = d3.scaleLinear()
-            .domain([min, min + numBins * binWidth])
+            .domain([min, min + numBins * binWidthAdjusted])
             .range([0, width]);
 
         const yScale = d3.scaleLinear()
@@ -95,19 +117,20 @@ document.addEventListener('DOMContentLoaded', () => {
             .enter()
             .append('rect')
             .attr('class', 'bar')
-            .attr('x', (d, i) => xScale(min + i * binWidth))
+            .attr('x', (d, i) => xScale(min + i * binWidthAdjusted))
             .attr('width', width / numBins - 1)
             .attr('y', d => yScale(d))
             .attr('height', d => height - yScale(d))
             .append('title')
             .text((d, i) => {
-                const binStart = min + i * binWidth;
-                const binEnd = binStart + binWidth - 1;
-                return `Range: ${binStart}-${binEnd}\nCount: ${d}`;
+                const binStart = min + i * binWidthAdjusted;
+                const binEnd = binStart + binWidthAdjusted;
+                return `Range: ${binStart.toFixed(3)}-${binEnd.toFixed(3)}\nCount: ${d}`;
             });
 
         // Add axes
-        const xAxis = d3.axisBottom(xScale);
+        const xAxis = d3.axisBottom(xScale)
+            .tickFormat(d => d.toFixed(distributionType === 'discrete' ? 0 : 2));
         const yAxis = d3.axisLeft(yScale);
 
         g.append('g')
@@ -138,7 +161,7 @@ document.addEventListener('DOMContentLoaded', () => {
             .attr('transform', `translate(${width/2},-15)`)
             .style('font-size', '14px')
             .style('font-weight', 'bold')
-            .text(`Frequency Histogram (Bin Width: ${binWidth})`);
+            .text(`Frequency Histogram (Bin Width: ${binWidthAdjusted.toFixed(3)})`);
     }
 
     // Draw cumulative distribution
@@ -160,9 +183,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const sortedNumbers = [...generatedNumbers].sort((a, b) => a - b);
         const cumulativeData = [];
         
-        for (let i = min; i <= max; i++) {
-            const count = sortedNumbers.filter(num => num <= i).length;
-            cumulativeData.push({ x: i, y: count });
+        for (let i = 0; i <= 100; i++) {
+            const interpolatedValue = min + (max - min) * (i / 100);
+            const count = sortedNumbers.filter(num => num <= interpolatedValue).length;
+            cumulativeData.push({ x: interpolatedValue, y: count });
         }
 
         // Scale adjustments
@@ -187,7 +211,8 @@ document.addEventListener('DOMContentLoaded', () => {
             .attr('d', line);
 
         // Add axes
-        const xAxis = d3.axisBottom(xScale);
+        const xAxis = d3.axisBottom(xScale)
+            .tickFormat(d => d.toFixed(2));
         const yAxis = d3.axisLeft(yScale);
 
         g.append('g')
@@ -229,13 +254,21 @@ document.addEventListener('DOMContentLoaded', () => {
         cumulativeSvg.selectAll('*').remove();
     }
 
+    // Update min and max input types based on distribution type
+    function updateInputTypes() {
+        const distributionType = distributionTypeSelect.value;
+        minInput.step = distributionType === 'discrete' ? '1' : 'any';
+        maxInput.step = distributionType === 'discrete' ? '1' : 'any';
+    }
+
     // Event listeners
     generateBtn.addEventListener('click', generateRandomNumbers);
     clearBtn.addEventListener('click', clearResults);
     updateHistogramBtn.addEventListener('click', drawHistogram);
     updateCdfBtn.addEventListener('click', drawCumulativeDistribution);
+    distributionTypeSelect.addEventListener('change', updateInputTypes);
 
     // Initial setup
+    updateInputTypes();
     clearResults();
 });
-

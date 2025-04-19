@@ -34,12 +34,12 @@ h2 {
 
 .generator-controls {
     display: flex;
-    flex-wrap: wrap;
     gap: 15px;
     margin-bottom: 20px;
     padding: 15px;
     background-color: #f8f9fa;
     border-radius: 5px;
+    flex-wrap: wrap;
     align-items: flex-end;
 }
 
@@ -59,6 +59,14 @@ input[type="number"] {
     border: 1px solid #ddd;
     border-radius: 4px;
     width: 100px;
+}
+
+select {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    width: 200px;
+    background-color: white;
 }
 
 button {
@@ -137,4 +145,3 @@ svg {
 .axis line, .axis path {
     stroke: #ddd;
 }
-
