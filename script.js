@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // DOM elements
+    // Existing DOM elements
     const distributionTypeSelect = document.getElementById('distribution-type');
     const minInput = document.getElementById('min');
     const maxInput = document.getElementById('max');
@@ -14,6 +14,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const updateCdfBtn = document.getElementById('update-cdf');
     const statisticalOutput = document.getElementById('statistical-output');
 
+    // New DOM elements for discrete distributions
+    const discreteDistributionControls = document.getElementById('discrete-distribution-controls');
+    const discreteDistributionTypeSelect = document.getElementById('discrete-distribution-type');
+    const uniformParams = document.getElementById('uniform-params');
+    const bernoulliParams = document.getElementById('bernoulli-params');
+    const binomialParams = document.getElementById('binomial-params');
+    const poissonParams = document.getElementById('poisson-params');
+
     // SVG elements
     const histogramSvg = d3.select('#histogram');
     const cumulativeSvg = d3.select('#cumulative');
@@ -26,34 +34,158 @@ document.addEventListener('DOMContentLoaded', () => {
     const width = 600 - margin.left - margin.right;
     const height = 300 - margin.top - margin.bottom;
 
-    // Generate random numbers
+    // Helper functions for discrete distributions
+    function factorial(n) {
+        if (n === 0 || n === 1) return 1;
+        let result = 1;
+        for (let i = 2; i <= n; i++) {
+            result *= i;
+        }
+        return result;
+    }
+
+    function binomialCoefficient(n, k) {
+        if (k < 0 || k > n) return 0;
+        if (k === 0 || k === n) return 1;
+        
+        // Use a more numerically stable method to compute binomial coefficient
+        let result = 1;
+        for (let i = 1; i <= k; i++) {
+            result *= (n - (i - 1));
+            result /= i;
+        }
+        return result;
+    }
+
+    // Generate random numbers based on selected distribution
     function generateRandomNumbers() {
         const distributionType = distributionTypeSelect.value;
-        const min = parseFloat(minInput.value);
-        const max = parseFloat(maxInput.value);
         const count = parseInt(countInput.value);
 
-        if (isNaN(min) || isNaN(max) || isNaN(count) || count <= 0) {
-            alert('Please enter valid numbers!');
-            return;
-        }
-
-        if (min >= max) {
-            alert('Minimum value must be less than maximum value!');
+        if (isNaN(count) || count <= 0) {
+            alert('Please enter a valid number of values!');
             return;
         }
 
         generatedNumbers = [];
-        for (let i = 0; i < count; i++) {
-            let randomNum;
-            if (distributionType === 'discrete') {
-                // Generate integer numbers
-                randomNum = Math.floor(Math.random() * (max - min + 1) + min);
-            } else {
-                // Generate floating-point numbers
-                randomNum = Math.random() * (max - min) + min;
+
+        if (distributionType === 'discrete') {
+            const discreteDistType = discreteDistributionTypeSelect.value;
+            
+            switch (discreteDistType) {
+                case 'uniform':
+                    const min = parseInt(minInput.value);
+                    const max = parseInt(maxInput.value);
+                    
+                    if (isNaN(min) || isNaN(max) || min >= max) {
+                        alert('Please enter valid minimum and maximum values (min < max)!');
+                        return;
+                    }
+                    
+                    // Generate uniform discrete distribution
+                    for (let i = 0; i < count; i++) {
+                        const randomNum = Math.floor(Math.random() * (max - min + 1) + min);
+                        generatedNumbers.push(randomNum);
+                    }
+                    break;
+                
+                case 'bernoulli':
+                    const p = parseFloat(document.getElementById('bernoulli-p').value);
+                    
+                    if (isNaN(p) || p < 0 || p > 1) {
+                        alert('Please enter a valid probability between 0 and 1!');
+                        return;
+                    }
+                    
+                    // Generate Bernoulli trials (0 or 1)
+                    for (let i = 0; i < count; i++) {
+                        const randomNum = Math.random() < p ? 1 : 0;
+                        generatedNumbers.push(randomNum);
+                    }
+                    break;
+                
+                case 'binomial':
+                    const n = parseInt(document.getElementById('binomial-n').value);
+                    const binomialP = parseFloat(document.getElementById('binomial-p').value);
+                    
+                    if (isNaN(n) || n <= 0) {
+                        alert('Please enter a valid number of trials (greater than 0)!');
+                        return;
+                    }
+                    
+                    if (isNaN(binomialP) || binomialP < 0 || binomialP > 1) {
+                        alert('Please enter a valid probability between 0 and 1!');
+                        return;
+                    }
+                    
+                    // Generate binomial distribution
+                    for (let i = 0; i < count; i++) {
+                        // Method 1: Direct calculation of binomial probabilities
+                        const u = Math.random();
+                        let cumulativeProb = 0;
+                        let k = 0;
+                        
+                        do {
+                            // P(X = k) = C(n,k) * p^k * (1-p)^(n-k)
+                            const prob = binomialCoefficient(n, k) * 
+                                        Math.pow(binomialP, k) * 
+                                        Math.pow(1 - binomialP, n - k);
+                            
+                            cumulativeProb += prob;
+                            
+                            if (u <= cumulativeProb) {
+                                generatedNumbers.push(k);
+                                break;
+                            }
+                            
+                            k++;
+                        } while (k <= n);
+                        
+                        // Fallback if numerical issues occur
+                        if (k > n) {
+                            generatedNumbers.push(n);
+                        }
+                    }
+                    break;
+                
+                case 'poisson':
+                    const lambda = parseFloat(document.getElementById('poisson-lambda').value);
+                    
+                    if (isNaN(lambda) || lambda <= 0) {
+                        alert('Please enter a valid lambda value (greater than 0)!');
+                        return;
+                    }
+                    
+                    // Generate Poisson distribution
+                    for (let i = 0; i < count; i++) {
+                        // Knuth's algorithm for generating Poisson random variables
+                        const L = Math.exp(-lambda);
+                        let k = 0;
+                        let p = 1;
+                        
+                        do {
+                            k++;
+                            p *= Math.random();
+                        } while (p > L);
+                        
+                        generatedNumbers.push(k - 1); // k-1 because we start with k=1
+                    }
+                    break;
             }
-            generatedNumbers.push(randomNum);
+        } else {
+            // Continuous distribution
+            const min = parseFloat(minInput.value);
+            const max = parseFloat(maxInput.value);
+            
+            if (isNaN(min) || isNaN(max) || min >= max) {
+                alert('Please enter valid minimum and maximum values (min < max)!');
+                return;
+            }
+            
+            for (let i = 0; i < count; i++) {
+                const randomNum = Math.random() * (max - min) + min;
+                generatedNumbers.push(randomNum);
+            }
         }
 
         displayNumbers();
@@ -296,11 +428,58 @@ document.addEventListener('DOMContentLoaded', () => {
         statisticalOutput.innerHTML = '';
     }
 
-    // Update min and max input types based on distribution type
+    // Show/hide distribution controls based on selections
+    function updateDistributionControls() {
+        const distributionType = distributionTypeSelect.value;
+        
+        // Show/hide discrete distribution type selector
+        discreteDistributionControls.classList.toggle('active', distributionType === 'discrete');
+        
+        // Show/hide parameter inputs
+        if (distributionType === 'discrete') {
+            const discreteDistType = discreteDistributionTypeSelect.value;
+            
+            // Hide all params first
+            uniformParams.classList.remove('active');
+            bernoulliParams.classList.remove('active');
+            binomialParams.classList.remove('active');
+            poissonParams.classList.remove('active');
+            
+            // Show appropriate params
+            switch (discreteDistType) {
+                case 'uniform':
+                    uniformParams.classList.add('active');
+                    break;
+                case 'bernoulli':
+                    bernoulliParams.classList.add('active');
+                    break;
+                case 'binomial':
+                    binomialParams.classList.add('active');
+                    break;
+                case 'poisson':
+                    poissonParams.classList.add('active');
+                    break;
+            }
+        } else {
+            // For continuous, only show uniform params
+            uniformParams.classList.add('active');
+            bernoulliParams.classList.remove('active');
+            binomialParams.classList.remove('active');
+            poissonParams.classList.remove('active');
+        }
+    }
+
+    // Update input types based on distribution type
     function updateInputTypes() {
         const distributionType = distributionTypeSelect.value;
         minInput.step = distributionType === 'discrete' ? '1' : 'any';
         maxInput.step = distributionType === 'discrete' ? '1' : 'any';
+        
+        // If switching to discrete, ensure min/max are integers
+        if (distributionType === 'discrete') {
+            minInput.value = Math.floor(parseFloat(minInput.value));
+            maxInput.value = Math.ceil(parseFloat(maxInput.value));
+        }
     }
 
     // Event listeners
@@ -308,9 +487,16 @@ document.addEventListener('DOMContentLoaded', () => {
     clearBtn.addEventListener('click', clearResults);
     updateHistogramBtn.addEventListener('click', drawHistogram);
     updateCdfBtn.addEventListener('click', drawCumulativeDistribution);
-    distributionTypeSelect.addEventListener('change', updateInputTypes);
+    
+    distributionTypeSelect.addEventListener('change', () => {
+        updateInputTypes();
+        updateDistributionControls();
+    });
+    
+    discreteDistributionTypeSelect.addEventListener('change', updateDistributionControls);
 
     // Initial setup
     updateInputTypes();
+    updateDistributionControls();
     clearResults();
 });

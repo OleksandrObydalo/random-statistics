@@ -164,3 +164,23 @@ svg {
     margin: 0;
     font-size: 14px;
 }
+
+.distribution-params {
+    display: none;
+    margin-bottom: 15px;
+}
+
+.distribution-params.active {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+#discrete-distribution-controls {
+    display: none;
+}
+
+#discrete-distribution-controls.active {
+    display: flex;
+    flex-direction: column;
+}
