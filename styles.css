@@ -34,12 +34,12 @@ h2 {
 
 .generator-controls {
     display: flex;
-    flex-wrap: wrap;
     gap: 15px;
     margin-bottom: 20px;
     padding: 15px;
     background-color: #f8f9fa;
     border-radius: 5px;
+    flex-wrap: wrap;
     align-items: flex-end;
 }
 
@@ -59,6 +59,14 @@ input[type="number"] {
     border: 1px solid #ddd;
     border-radius: 4px;
     width: 100px;
+}
+
+select {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    width: 200px;
+    background-color: white;
 }
 
 button {
@@ -138,3 +146,41 @@ svg {
     stroke: #ddd;
 }
 
+.statistical-metrics {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 5px;
+    margin-top: 20px;
+    border: 1px solid #ddd;
+}
+
+.statistical-output {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.statistical-output p {
+    margin: 0;
+    font-size: 14px;
+}
+
+.distribution-params {
+    display: none;
+    margin-bottom: 15px;
+}
+
+.distribution-params.active {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+#discrete-distribution-controls {
+    display: none;
+}
+
+#discrete-distribution-controls.active {
+    display: flex;
+    flex-direction: column;
+}
