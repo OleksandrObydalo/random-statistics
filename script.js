@@ -1,10 +1,5 @@
-// script.js
 document.addEventListener('DOMContentLoaded', () => {
-    // === Существующие элементы ===
-    const distributionTypeSelect = document.getElementById('distribution-type');
-    const discreteDistributionControls = document.getElementById('discrete-distribution-controls');
-    const discreteDistributionTypeSelect = document.getElementById('discrete-distribution-type');
-
+    // DOM elements
     const minInput = document.getElementById('min');
     const maxInput = document.getElementById('max');
     const countInput = document.getElementById('count');
@@ -16,206 +11,231 @@ document.addEventListener('DOMContentLoaded', () => {
     const xScaleInput = document.getElementById('x-scale');
     const yScaleInput = document.getElementById('y-scale');
     const updateCdfBtn = document.getElementById('update-cdf');
-    const statisticalOutput = document.getElementById('statistical-output');
 
-    const uniformParams = document.getElementById('uniform-params');
-    const bernoulliParams = document.getElementById('bernoulli-params');
-    const binomialParams = document.getElementById('binomial-params');
-    const poissonParams = document.getElementById('poisson-params');
-
-    // === Новые элементы для непрерывных распределений ===
-    const continuousDistributionControls = document.getElementById('continuous-distribution-controls');
-    const continuousDistributionTypeSelect = document.getElementById('continuous-distribution-type');
-    const exponentialParams = document.getElementById('exponential-params');
-    const normalParams = document.getElementById('normal-params');
-
-    // SVG и служебные переменные — без изменений
+    // SVG elements
     const histogramSvg = d3.select('#histogram');
     const cumulativeSvg = d3.select('#cumulative');
+
+    // Generated numbers
     let generatedNumbers = [];
+
+    // SVG dimensions
     const margin = { top: 40, right: 20, bottom: 50, left: 50 };
     const width = 600 - margin.left - margin.right;
     const height = 300 - margin.top - margin.bottom;
 
-    // === Генерация чисел ===
+    // Generate random numbers
     function generateRandomNumbers() {
-        const distributionType = distributionTypeSelect.value;
+        const min = parseInt(minInput.value);
+        const max = parseInt(maxInput.value);
         const count = parseInt(countInput.value);
-        if (isNaN(count) || count <= 0) {
-            alert('Please enter a valid number of values!');
+
+        if (isNaN(min) || isNaN(max) || isNaN(count) || count <= 0) {
+            alert('Please enter valid numbers!');
             return;
         }
-        generatedNumbers = [];
 
-        if (distributionType === 'discrete') {
-            // — Существующая логика для discrete —
-            const discreteDistType = discreteDistributionTypeSelect.value;
-            switch (discreteDistType) {
-                case 'uniform':
-                    const min = parseInt(minInput.value);
-                    const max = parseInt(maxInput.value);
-                    if (isNaN(min) || isNaN(max) || min >= max) {
-                        alert('Please enter valid minimum and maximum values (min < max)!');
-                        return;
-                    }
-                    for (let i = 0; i < count; i++) {
-                        generatedNumbers.push(
-                            Math.floor(Math.random() * (max - min + 1) + min)
-                        );
-                    }
-                    break;
-                case 'bernoulli':
-                    const p = parseFloat(document.getElementById('bernoulli-p').value);
-                    if (isNaN(p) || p < 0 || p > 1) {
-                        alert('Please enter a valid probability between 0 and 1!');
-                        return;
-                    }
-                    for (let i = 0; i < count; i++) {
-                        generatedNumbers.push(Math.random() < p ? 1 : 0);
-                    }
-                    break;
-                case 'binomial':
-                    const n = parseInt(document.getElementById('binomial-n').value);
-                    const binomialP = parseFloat(document.getElementById('binomial-p').value);
-                    if (isNaN(n) || n <= 0 || isNaN(binomialP) || binomialP < 0 || binomialP > 1) {
-                        alert('Please enter valid binomial parameters!');
-                        return;
-                    }
-                    // … код binomial без изменений …
-                    for (let i = 0; i < count; i++) {
-                        const u = Math.random();
-                        let cumProb = 0, k = 0;
-                        do {
-                            const coeff = binomialCoefficient(n, k) *
-                                Math.pow(binomialP, k) *
-                                Math.pow(1 - binomialP, n - k);
-                            cumProb += coeff;
-                            if (u <= cumProb) {
-                                generatedNumbers.push(k);
-                                break;
-                            }
-                            k++;
-                        } while (k <= n);
-                        if (k > n) generatedNumbers.push(n);
-                    }
-                    break;
-                case 'poisson':
-                    const lambda = parseFloat(document.getElementById('poisson-lambda').value);
-                    if (isNaN(lambda) || lambda <= 0) {
-                        alert('Please enter a valid lambda value (greater than 0)!');
-                        return;
-                    }
-                    for (let i = 0; i < count; i++) {
-                        const L = Math.exp(-lambda);
-                        let k = 0, p = 1;
-                        do {
-                            k++;
-                            p *= Math.random();
-                        } while (p > L);
-                        generatedNumbers.push(k - 1);
-                    }
-                    break;
-            }
-        } else {
-            // === Новая логика для continuous ===
-            const contType = continuousDistributionTypeSelect.value;
-            switch (contType) {
-                case 'uniform':
-                    const min = parseFloat(minInput.value);
-                    const max = parseFloat(maxInput.value);
-                    if (isNaN(min) || isNaN(max) || min >= max) {
-                        alert('Please enter valid minimum and maximum values (min < max)!');
-                        return;
-                    }
-                    for (let i = 0; i < count; i++) {
-                        generatedNumbers.push(Math.random() * (max - min) + min);
-                    }
-                    break;
-                case 'exponential':
-                    const λ = parseFloat(document.getElementById('exponential-lambda').value);
-                    if (isNaN(λ) || λ <= 0) {
-                        alert('Please enter a valid lambda value (greater than 0)!');
-                        return;
-                    }
-                    for (let i = 0; i < count; i++) {
-                        const u = Math.random();
-                        generatedNumbers.push(-Math.log(1 - u) / λ);
-                    }
-                    break;
-                case 'normal':
-                    const mean = parseFloat(document.getElementById('normal-mean').value);
-                    const sigma = parseFloat(document.getElementById('normal-sigma').value);
-                    if (isNaN(mean) || isNaN(sigma) || sigma <= 0) {
-                        alert('Please enter valid mean and positive sigma!');
-                        return;
-                    }
-                    for (let i = 0; i < count; i++) {
-                        const u1 = Math.random(), u2 = Math.random();
-                        const z = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
-                        generatedNumbers.push(mean + sigma * z);
-                    }
-                    break;
-            }
+        if (min >= max) {
+            alert('Minimum value must be less than maximum value!');
+            return;
+        }
+
+        generatedNumbers = [];
+        for (let i = 0; i < count; i++) {
+            const randomNum = Math.floor(Math.random() * (max - min + 1) + min);
+            generatedNumbers.push(randomNum);
         }
 
         displayNumbers();
         drawHistogram();
         drawCumulativeDistribution();
-        displayStatistics();
     }
 
-    // === Обработчик показа параметров ===
-    function updateDistributionControls() {
-        const type = distributionTypeSelect.value;
-        if (type === 'discrete') {
-            discreteDistributionControls.classList.add('active');
-            continuousDistributionControls.classList.remove('active');
+    // Display generated numbers
+    function displayNumbers() {
+        generatedNumbers.sort((a, b) => a - b);
+        numbersOutput.textContent = generatedNumbers.join(', ');
+    }
 
-            // скрываем все
-            [uniformParams, bernoulliParams, binomialParams, poissonParams, exponentialParams, normalParams]
-                .forEach(el => el.classList.remove('active'));
+    // Draw histogram
+    function drawHistogram() {
+        const binWidth = parseInt(binWidthInput.value) || 10;
+        
+        histogramSvg.selectAll('*').remove();
+        
+        if (generatedNumbers.length === 0) return;
 
-            // показываем только нужный блок
-            switch (discreteDistributionTypeSelect.value) {
-                case 'uniform': uniformParams.classList.add('active'); break;
-                case 'bernoulli': bernoulliParams.classList.add('active'); break;
-                case 'binomial': binomialParams.classList.add('active'); break;
-                case 'poisson': poissonParams.classList.add('active'); break;
-            }
-        } else {
-            discreteDistributionControls.classList.remove('active');
-            continuousDistributionControls.classList.add('active');
+        const g = histogramSvg.append('g')
+            .attr('transform', `translate(${margin.left},${margin.top})`);
 
-            // скрываем все
-            [uniformParams, bernoulliParams, binomialParams, poissonParams, exponentialParams, normalParams]
-                .forEach(el => el.classList.remove('active'));
+        const min = Math.min(...generatedNumbers);
+        const max = Math.max(...generatedNumbers);
 
-            // показываем только нужный блок
-            switch (continuousDistributionTypeSelect.value) {
-                case 'uniform': uniformParams.classList.add('active'); break;
-                case 'exponential': exponentialParams.classList.add('active'); break;
-                case 'normal': normalParams.classList.add('active'); break;
-            }
+        // Create bins
+        const numBins = Math.ceil((max - min) / binWidth);
+        const bins = Array(numBins).fill(0);
+        
+        generatedNumbers.forEach(num => {
+            const binIndex = Math.floor((num - min) / binWidth);
+            bins[binIndex]++;
+        });
+
+        const xScale = d3.scaleLinear()
+            .domain([min, min + numBins * binWidth])
+            .range([0, width]);
+
+        const yScale = d3.scaleLinear()
+            .domain([0, d3.max(bins)])
+            .range([height, 0])
+            .nice();
+
+        // Draw bars
+        g.selectAll('.bar')
+            .data(bins)
+            .enter()
+            .append('rect')
+            .attr('class', 'bar')
+            .attr('x', (d, i) => xScale(min + i * binWidth))
+            .attr('width', width / numBins - 1)
+            .attr('y', d => yScale(d))
+            .attr('height', d => height - yScale(d))
+            .append('title')
+            .text((d, i) => {
+                const binStart = min + i * binWidth;
+                const binEnd = binStart + binWidth - 1;
+                return `Range: ${binStart}-${binEnd}\nCount: ${d}`;
+            });
+
+        // Add axes
+        const xAxis = d3.axisBottom(xScale);
+        const yAxis = d3.axisLeft(yScale);
+
+        g.append('g')
+            .attr('class', 'axis x-axis')
+            .attr('transform', `translate(0,${height})`)
+            .call(xAxis);
+
+        g.append('g')
+            .attr('class', 'axis y-axis')
+            .call(yAxis);
+
+        // Add axis labels
+        g.append('text')
+            .attr('text-anchor', 'middle')
+            .attr('transform', `translate(${width/2},${height + 35})`)
+            .text('Value');
+
+        g.append('text')
+            .attr('text-anchor', 'middle')
+            .attr('transform', 'rotate(-90)')
+            .attr('y', -40)
+            .attr('x', -height/2)
+            .text('Frequency');
+
+        // Add title
+        g.append('text')
+            .attr('text-anchor', 'middle')
+            .attr('transform', `translate(${width/2},-15)`)
+            .style('font-size', '14px')
+            .style('font-weight', 'bold')
+            .text(`Frequency Histogram (Bin Width: ${binWidth})`);
+    }
+
+    // Draw cumulative distribution
+    function drawCumulativeDistribution() {
+        const xScaleFactor = parseFloat(xScaleInput.value) || 1;
+        const yScaleFactor = parseFloat(yScaleInput.value) || 1;
+        
+        cumulativeSvg.selectAll('*').remove();
+        
+        if (generatedNumbers.length === 0) return;
+
+        const g = cumulativeSvg.append('g')
+            .attr('transform', `translate(${margin.left},${margin.top})`);
+
+        const min = Math.min(...generatedNumbers);
+        const max = Math.max(...generatedNumbers);
+
+        // Create cumulative data
+        const sortedNumbers = [...generatedNumbers].sort((a, b) => a - b);
+        const cumulativeData = [];
+        
+        for (let i = min; i <= max; i++) {
+            const count = sortedNumbers.filter(num => num <= i).length;
+            cumulativeData.push({ x: i, y: count });
         }
+
+        // Scale adjustments
+        const xScale = d3.scaleLinear()
+            .domain([min, min + (max - min) * xScaleFactor])
+            .range([0, width])
+            .clamp(true);
+
+        const yScale = d3.scaleLinear()
+            .domain([0, sortedNumbers.length * yScaleFactor])
+            .range([height, 0])
+            .clamp(true);
+
+        // Draw line
+        const line = d3.line()
+            .x(d => xScale(d.x))
+            .y(d => yScale(d.y));
+
+        g.append('path')
+            .datum(cumulativeData)
+            .attr('class', 'line')
+            .attr('d', line);
+
+        // Add axes
+        const xAxis = d3.axisBottom(xScale);
+        const yAxis = d3.axisLeft(yScale);
+
+        g.append('g')
+            .attr('class', 'axis x-axis')
+            .attr('transform', `translate(0,${height})`)
+            .call(xAxis);
+
+        g.append('g')
+            .attr('class', 'axis y-axis')
+            .call(yAxis);
+
+        // Add axis labels
+        g.append('text')
+            .attr('text-anchor', 'middle')
+            .attr('transform', `translate(${width/2},${height + 35})`)
+            .text('Value');
+
+        g.append('text')
+            .attr('text-anchor', 'middle')
+            .attr('transform', 'rotate(-90)')
+            .attr('y', -40)
+            .attr('x', -height/2)
+            .text('Cumulative Count');
+
+        // Add title
+        g.append('text')
+            .attr('text-anchor', 'middle')
+            .attr('transform', `translate(${width/2},-15)`)
+            .style('font-size', '14px')
+            .style('font-weight', 'bold')
+            .text(`Cumulative Distribution (X: ${xScaleFactor}x, Y: ${yScaleFactor}x)`);
     }
 
-    // === Остальные функции (displayNumbers, drawHistogram, drawCumulativeDistribution, calculateStatistics, displayStatistics, clearResults) без изменений ===
-    // …
-    
-    // === Навешиваем слушатели ===
+    // Clear all results
+    function clearResults() {
+        generatedNumbers = [];
+        numbersOutput.textContent = '';
+        histogramSvg.selectAll('*').remove();
+        cumulativeSvg.selectAll('*').remove();
+    }
+
+    // Event listeners
     generateBtn.addEventListener('click', generateRandomNumbers);
     clearBtn.addEventListener('click', clearResults);
     updateHistogramBtn.addEventListener('click', drawHistogram);
     updateCdfBtn.addEventListener('click', drawCumulativeDistribution);
-    distributionTypeSelect.addEventListener('change', () => {
-        updateInputTypes();
-        updateDistributionControls();
-    });
-    discreteDistributionTypeSelect.addEventListener('change', updateDistributionControls);
-    continuousDistributionTypeSelect.addEventListener('change', updateDistributionControls);
 
-    // === Инициализация ===
-    updateInputTypes();
-    updateDistributionControls();
+    // Initial setup
     clearResults();
 });
+

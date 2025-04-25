@@ -1,4 +1,3 @@
-<!-- index.html -->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -12,92 +11,13 @@
         
         <div class="generator-controls">
             <div class="control-group">
-                <label for="distribution-type">Distribution Type:</label>
-                <select id="distribution-type">
-                    <option value="discrete">Discrete (Integer)</option>
-                    <option value="continuous">Continuous (Float)</option>
-                </select>
+                <label for="min">Minimum value:</label>
+                <input type="number" id="min" value="1">
             </div>
             
-            <!-- Discrete Distribution Type -->
-            <div class="control-group" id="discrete-distribution-controls">
-                <label for="discrete-distribution-type">Discrete Distribution:</label>
-                <select id="discrete-distribution-type">
-                    <option value="uniform">Uniform</option>
-                    <option value="bernoulli">Bernoulli</option>
-                    <option value="binomial">Binomial</option>
-                    <option value="poisson">Poisson</option>
-                </select>
-            </div>
-
-            <!-- Continuous Distribution Type -->
-            <div class="control-group" id="continuous-distribution-controls">
-                <label for="continuous-distribution-type">Continuous Distribution:</label>
-                <select id="continuous-distribution-type">
-                    <option value="uniform">Uniform</option>
-                    <option value="exponential">Exponential</option>
-                    <option value="normal">Normal</option>
-                </select>
-            </div>
-
-            <!-- Parameters: Uniform (used for both Discrete & Continuous uniform) -->
-            <div id="uniform-params" class="distribution-params">
-                <div class="control-group">
-                    <label for="min">Minimum value:</label>
-                    <input type="number" id="min" value="1" step="any">
-                </div>
-                <div class="control-group">
-                    <label for="max">Maximum value:</label>
-                    <input type="number" id="max" value="100" step="any">
-                </div>
-            </div>
-            
-            <!-- Parameters: Bernoulli -->
-            <div id="bernoulli-params" class="distribution-params">
-                <div class="control-group">
-                    <label for="bernoulli-p">Success probability (p):</label>
-                    <input type="number" id="bernoulli-p" value="0.5" min="0" max="1" step="0.01">
-                </div>
-            </div>
-            
-            <!-- Parameters: Binomial -->
-            <div id="binomial-params" class="distribution-params">
-                <div class="control-group">
-                    <label for="binomial-n">Number of trials (n):</label>
-                    <input type="number" id="binomial-n" value="10" min="1" step="1">
-                </div>
-                <div class="control-group">
-                    <label for="binomial-p">Success probability (p):</label>
-                    <input type="number" id="binomial-p" value="0.5" min="0" max="1" step="0.01">
-                </div>
-            </div>
-            
-            <!-- Parameters: Poisson -->
-            <div id="poisson-params" class="distribution-params">
-                <div class="control-group">
-                    <label for="poisson-lambda">Lambda (λ):</label>
-                    <input type="number" id="poisson-lambda" value="5" min="0" step="0.1">
-                </div>
-            </div>
-            
-            <!-- Параметры для непрерывных: Exponential -->
-            <div id="exponential-params" class="distribution-params">
-                <div class="control-group">
-                    <label for="exponential-lambda">Lambda (λ):</label>
-                    <input type="number" id="exponential-lambda" value="1" min="0" step="any">
-                </div>
-            </div>
-            
-            <!-- Параметры для непрерывных: Normal -->
-            <div id="normal-params" class="distribution-params">
-                <div class="control-group">
-                    <label for="normal-mean">Mean (μ):</label>
-                    <input type="number" id="normal-mean" value="0" step="any">
-                </div>
-                <div class="control-group">
-                    <label for="normal-sigma">Standard deviation (σ):</label>
-                    <input type="number" id="normal-sigma" value="1" min="0" step="any">
-                </div>
+            <div class="control-group">
+                <label for="max">Maximum value:</label>
+                <input type="number" id="max" value="100">
             </div>
             
             <div class="control-group">
@@ -109,9 +29,40 @@
             <button id="clear-btn">Clear Results</button>
         </div>
         
-        <!-- Здесь остальная часть без изменений -->
-        <!-- … -->
-        
+        <div class="results-container">
+            <h2>Generated Numbers</h2>
+            <div id="numbers-output" class="numbers-output"></div>
+            
+            <div class="visualization-container">
+                <div class="vis-section">
+                    <h2>Frequency Histogram</h2>
+                    <div class="control-group">
+                        <label for="bin-width">Bin Width:</label>
+                        <input type="number" id="bin-width" value="10" min="1">
+                        <button id="update-histogram">Update Histogram</button>
+                    </div>
+                    <div class="chart-container">
+                        <svg id="histogram" width="600" height="300"></svg>
+                    </div>
+                </div>
+                
+                <div class="vis-section">
+                    <h2>Cumulative Distribution</h2>
+                    <div class="control-group">
+                        <label for="x-scale">X-Scale Factor:</label>
+                        <input type="number" id="x-scale" value="1" min="0.1" step="0.1">
+                        
+                        <label for="y-scale">Y-Scale Factor:</label>
+                        <input type="number" id="y-scale" value="1" min="0.1" step="0.1">
+                        
+                        <button id="update-cdf">Update Graph</button>
+                    </div>
+                    <div class="chart-container">
+                        <svg id="cumulative" width="600" height="300"></svg>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
     
     <script src="https://d3js.org/d3.v7.min.js"></script>
