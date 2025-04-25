@@ -22,6 +22,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const binomialParams = document.getElementById('binomial-params');
     const poissonParams = document.getElementById('poisson-params');
 
+    // New DOM elements for continuous distributions
+    const continuousDistributionControls = document.getElementById('continuous-distribution-controls');
+    const continuousDistributionTypeSelect = document.getElementById('continuous-distribution-type');
+    const uniformContinuousParams = document.getElementById('uniform-continuous-params');
+    const exponentialParams = document.getElementById('exponential-params');
+    const normalParams = document.getElementById('normal-params');
+
     // SVG elements
     const histogramSvg = d3.select('#histogram');
     const cumulativeSvg = d3.select('#cumulative');
@@ -174,17 +181,58 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } else {
             // Continuous distribution
-            const min = parseFloat(minInput.value);
-            const max = parseFloat(maxInput.value);
+            const continuousDistType = continuousDistributionTypeSelect.value;
             
-            if (isNaN(min) || isNaN(max) || min >= max) {
-                alert('Please enter valid minimum and maximum values (min < max)!');
-                return;
-            }
-            
-            for (let i = 0; i < count; i++) {
-                const randomNum = Math.random() * (max - min) + min;
-                generatedNumbers.push(randomNum);
+            switch (continuousDistType) {
+                case 'uniform':
+                    const contMin = parseFloat(document.getElementById('continuous-min').value);
+                    const contMax = parseFloat(document.getElementById('continuous-max').value);
+                    
+                    if (isNaN(contMin) || isNaN(contMax) || contMin >= contMax) {
+                        alert('Please enter valid minimum and maximum values (min < max)!');
+                        return;
+                    }
+                    
+                    for (let i = 0; i < count; i++) {
+                        const randomNum = Math.random() * (contMax - contMin) + contMin;
+                        generatedNumbers.push(randomNum);
+                    }
+                    break;
+                
+                case 'exponential':
+                    const exponentialLambda = parseFloat(document.getElementById('exponential-lambda').value);
+                    
+                    if (isNaN(exponentialLambda) || exponentialLambda <= 0) {
+                        alert('Please enter a valid lambda value (greater than 0)!');
+                        return;
+                    }
+                    
+                    for (let i = 0; i < count; i++) {
+                        // Inverse transform sampling for exponential distribution
+                        const u = Math.random();
+                        const randomNum = -Math.log(1 - u) / exponentialLambda;
+                        generatedNumbers.push(randomNum);
+                    }
+                    break;
+                
+                case 'normal':
+                    const mean = parseFloat(document.getElementById('normal-mean').value);
+                    const sigma = parseFloat(document.getElementById('normal-sigma').value);
+                    
+                    if (isNaN(sigma) || sigma <= 0) {
+                        alert('Please enter a valid standard deviation (greater than 0)!');
+                        return;
+                    }
+                    
+                    for (let i = 0; i < count; i++) {
+                        // Box-Muller transform for generating normal distribution
+                        const u1 = Math.random();
+                        const u2 = Math.random();
+                        const z0 = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+                        const randomNum = mean + z0 * sigma;
+                        generatedNumbers.push(randomNum);
+                    }
+                    break;
             }
         }
 
@@ -432,11 +480,38 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateDistributionControls() {
         const distributionType = distributionTypeSelect.value;
         
-        // Show/hide discrete distribution type selector
+        // Show/hide continuous distribution type selector
+        continuousDistributionControls.classList.toggle('active', distributionType === 'continuous');
         discreteDistributionControls.classList.toggle('active', distributionType === 'discrete');
         
-        // Show/hide parameter inputs
-        if (distributionType === 'discrete') {
+        if (distributionType === 'continuous') {
+            const continuousDistType = continuousDistributionTypeSelect.value;
+            
+            // Hide all params first
+            uniformContinuousParams.classList.remove('active');
+            exponentialParams.classList.remove('active');
+            normalParams.classList.remove('active');
+            
+            // Hide discrete distribution params
+            uniformParams.classList.remove('active');
+            bernoulliParams.classList.remove('active');
+            binomialParams.classList.remove('active');
+            poissonParams.classList.remove('active');
+            
+            // Show appropriate continuous params
+            switch (continuousDistType) {
+                case 'uniform':
+                    uniformContinuousParams.classList.add('active');
+                    break;
+                case 'exponential':
+                    exponentialParams.classList.add('active');
+                    break;
+                case 'normal':
+                    normalParams.classList.add('active');
+                    break;
+            }
+        } else {
+            // Existing discrete distribution control logic
             const discreteDistType = discreteDistributionTypeSelect.value;
             
             // Hide all params first
@@ -445,7 +520,12 @@ document.addEventListener('DOMContentLoaded', () => {
             binomialParams.classList.remove('active');
             poissonParams.classList.remove('active');
             
-            // Show appropriate params
+            // Hide continuous distribution params
+            uniformContinuousParams.classList.remove('active');
+            exponentialParams.classList.remove('active');
+            normalParams.classList.remove('active');
+            
+            // Show appropriate discrete params
             switch (discreteDistType) {
                 case 'uniform':
                     uniformParams.classList.add('active');
@@ -460,12 +540,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     poissonParams.classList.add('active');
                     break;
             }
-        } else {
-            // For continuous, only show uniform params
-            uniformParams.classList.add('active');
-            bernoulliParams.classList.remove('active');
-            binomialParams.classList.remove('active');
-            poissonParams.classList.remove('active');
         }
     }
 
@@ -494,6 +568,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
     discreteDistributionTypeSelect.addEventListener('change', updateDistributionControls);
+    continuousDistributionTypeSelect.addEventListener('change', updateDistributionControls);
 
     // Initial setup
     updateInputTypes();

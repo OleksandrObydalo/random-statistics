@@ -29,6 +29,16 @@
                 </select>
             </div>
 
+            <!-- Add continuous distribution controls -->
+            <div id="continuous-distribution-controls">
+                <label for="continuous-distribution-type">Continuous Distribution:</label>
+                <select id="continuous-distribution-type">
+                    <option value="uniform">Uniform</option>
+                    <option value="exponential">Exponential</option>
+                    <option value="normal">Normal</option>
+                </select>
+            </div>
+
             <!-- Parameters specific to each distribution type -->
             <div id="uniform-params" class="distribution-params">
                 <div class="control-group">
@@ -64,6 +74,38 @@
                 <div class="control-group">
                     <label for="poisson-lambda">Lambda (λ):</label>
                     <input type="number" id="poisson-lambda" value="5" min="0" step="0.1">
+                </div>
+            </div>
+
+            <!-- Add new parameter groups for continuous distributions -->
+            <div id="uniform-continuous-params" class="distribution-params">
+                <div class="control-group">
+                    <label for="continuous-min">Minimum value:</label>
+                    <input type="number" id="continuous-min" value="0" step="any">
+                </div>
+                
+                <div class="control-group">
+                    <label for="continuous-max">Maximum value:</label>
+                    <input type="number" id="continuous-max" value="1" step="any">
+                </div>
+            </div>
+
+            <div id="exponential-params" class="distribution-params">
+                <div class="control-group">
+                    <label for="exponential-lambda">Lambda (λ):</label>
+                    <input type="number" id="exponential-lambda" value="1" min="0.1" step="0.1">
+                </div>
+            </div>
+
+            <div id="normal-params" class="distribution-params">
+                <div class="control-group">
+                    <label for="normal-mean">Mean (μ):</label>
+                    <input type="number" id="normal-mean" value="0" step="any">
+                </div>
+                
+                <div class="control-group">
+                    <label for="normal-sigma">Standard Deviation (σ):</label>
+                    <input type="number" id="normal-sigma" value="1" min="0.1" step="0.1">
                 </div>
             </div>
             

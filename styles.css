@@ -184,3 +184,26 @@ svg {
     display: flex;
     flex-direction: column;
 }
+
+#continuous-distribution-controls {
+    display: none;
+}
+
+#continuous-distribution-controls.active {
+    display: flex;
+    flex-direction: column;
+}
+
+#exponential-params,
+#normal-params,
+#uniform-continuous-params {
+    display: none;
+}
+
+#exponential-params.active,
+#normal-params.active,
+#uniform-continuous-params.active {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
