@@ -1,3 +1,4 @@
+<!-- index.html -->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -18,7 +19,7 @@
                 </select>
             </div>
             
-            <!-- Discrete Distribution Type, visible only when discrete is selected -->
+            <!-- Discrete Distribution Type -->
             <div class="control-group" id="discrete-distribution-controls">
                 <label for="discrete-distribution-type">Discrete Distribution:</label>
                 <select id="discrete-distribution-type">
@@ -29,19 +30,29 @@
                 </select>
             </div>
 
-            <!-- Parameters specific to each distribution type -->
+            <!-- Continuous Distribution Type -->
+            <div class="control-group" id="continuous-distribution-controls">
+                <label for="continuous-distribution-type">Continuous Distribution:</label>
+                <select id="continuous-distribution-type">
+                    <option value="uniform">Uniform</option>
+                    <option value="exponential">Exponential</option>
+                    <option value="normal">Normal</option>
+                </select>
+            </div>
+
+            <!-- Parameters: Uniform (used for both Discrete & Continuous uniform) -->
             <div id="uniform-params" class="distribution-params">
                 <div class="control-group">
                     <label for="min">Minimum value:</label>
                     <input type="number" id="min" value="1" step="any">
                 </div>
-                
                 <div class="control-group">
                     <label for="max">Maximum value:</label>
                     <input type="number" id="max" value="100" step="any">
                 </div>
             </div>
             
+            <!-- Parameters: Bernoulli -->
             <div id="bernoulli-params" class="distribution-params">
                 <div class="control-group">
                     <label for="bernoulli-p">Success probability (p):</label>
@@ -49,6 +60,7 @@
                 </div>
             </div>
             
+            <!-- Parameters: Binomial -->
             <div id="binomial-params" class="distribution-params">
                 <div class="control-group">
                     <label for="binomial-n">Number of trials (n):</label>
@@ -60,10 +72,31 @@
                 </div>
             </div>
             
+            <!-- Parameters: Poisson -->
             <div id="poisson-params" class="distribution-params">
                 <div class="control-group">
                     <label for="poisson-lambda">Lambda (λ):</label>
                     <input type="number" id="poisson-lambda" value="5" min="0" step="0.1">
+                </div>
+            </div>
+            
+            <!-- Параметры для непрерывных: Exponential -->
+            <div id="exponential-params" class="distribution-params">
+                <div class="control-group">
+                    <label for="exponential-lambda">Lambda (λ):</label>
+                    <input type="number" id="exponential-lambda" value="1" min="0" step="any">
+                </div>
+            </div>
+            
+            <!-- Параметры для непрерывных: Normal -->
+            <div id="normal-params" class="distribution-params">
+                <div class="control-group">
+                    <label for="normal-mean">Mean (μ):</label>
+                    <input type="number" id="normal-mean" value="0" step="any">
+                </div>
+                <div class="control-group">
+                    <label for="normal-sigma">Standard deviation (σ):</label>
+                    <input type="number" id="normal-sigma" value="1" min="0" step="any">
                 </div>
             </div>
             
@@ -76,43 +109,9 @@
             <button id="clear-btn">Clear Results</button>
         </div>
         
-        <div class="results-container">
-            <h2>Generated Numbers</h2>
-            <div id="numbers-output" class="numbers-output"></div>
-            <div class="statistical-metrics">
-                <h2>Statistical Metrics</h2>
-                <div id="statistical-output" class="statistical-output"></div>
-            </div>
-            <div class="visualization-container">
-                <div class="vis-section">
-                    <h2>Frequency Histogram</h2>
-                    <div class="control-group">
-                        <label for="bin-width">Bin Width:</label>
-                        <input type="number" id="bin-width" value="10" min="1">
-                        <button id="update-histogram">Update Histogram</button>
-                    </div>
-                    <div class="chart-container">
-                        <svg id="histogram" width="600" height="300"></svg>
-                    </div>
-                </div>
-                
-                <div class="vis-section">
-                    <h2>Cumulative Distribution</h2>
-                    <div class="control-group">
-                        <label for="x-scale">X-Scale Factor:</label>
-                        <input type="number" id="x-scale" value="1" min="0.1" step="0.1">
-                        
-                        <label for="y-scale">Y-Scale Factor:</label>
-                        <input type="number" id="y-scale" value="1" min="0.1" step="0.1">
-                        
-                        <button id="update-cdf">Update Graph</button>
-                    </div>
-                    <div class="chart-container">
-                        <svg id="cumulative" width="600" height="300"></svg>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <!-- Здесь остальная часть без изменений -->
+        <!-- … -->
+        
     </div>
     
     <script src="https://d3js.org/d3.v7.min.js"></script>

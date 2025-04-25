@@ -1,3 +1,4 @@
+/* styles.css */
 * {
     box-sizing: border-box;
     margin: 0;
@@ -181,6 +182,16 @@ svg {
 }
 
 #discrete-distribution-controls.active {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Новый блок для выбора непрерывных распределений */
+#continuous-distribution-controls {
+    display: none;
+}
+
+#continuous-distribution-controls.active {
     display: flex;
     flex-direction: column;
 }
