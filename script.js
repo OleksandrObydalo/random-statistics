@@ -28,6 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const uniformContinuousParams = document.getElementById('uniform-continuous-params');
     const exponentialParams = document.getElementById('exponential-params');
     const normalParams = document.getElementById('normal-params');
+    const gammaParams = document.getElementById('gamma-params');
 
     // SVG elements
     const histogramSvg = d3.select('#histogram');
@@ -231,6 +232,41 @@ document.addEventListener('DOMContentLoaded', () => {
                         const z0 = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
                         const randomNum = mean + z0 * sigma;
                         generatedNumbers.push(randomNum);
+                    }
+                    break;
+                
+                case 'gamma':
+                    const gammaN = parseFloat(document.getElementById('gamma-n').value);
+                    const alphaParam = parseFloat(document.getElementById('gamma-alpha').value);
+                    
+                    if (isNaN(gammaN) || gammaN <= 0 || !Number.isInteger(gammaN)) {
+                        alert('Please enter a valid positive integer for n!');
+                        return;
+                    }
+                    
+                    if (isNaN(alphaParam) || alphaParam <= 0) {
+                        alert('Please enter a valid positive alpha value!');
+                        return;
+                    }
+                    
+                    for (let i = 0; i < count; i++) {
+                        // Gamma distribution generation using Marsaglia and Tsang method
+                        // This method works well for n as an integer
+                        let x = 0;
+                        for (let j = 0; j < gammaN; j++) {
+                            // Generate Gamma(1, alpha) distribution using inverse transform sampling
+                            const u1 = Math.random();
+                            const u2 = Math.random();
+                            const u3 = Math.random();
+                            
+                            const w = -Math.log(u1);
+                            const v = u2 * Math.pow(w / alphaParam, 1 / (gammaN - 1));
+                            
+                            if (v <= 1) {
+                                x += -Math.log(u3) / alphaParam;
+                            }
+                        }
+                        generatedNumbers.push(x);
                     }
                     break;
             }
@@ -495,6 +531,7 @@ document.addEventListener('DOMContentLoaded', () => {
             uniformContinuousParams.classList.remove('active');
             exponentialParams.classList.remove('active');
             normalParams.classList.remove('active');
+            gammaParams.classList.remove('active');
             
             // Hide discrete distribution params
             uniformParams.classList.remove('active');
@@ -513,6 +550,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 case 'normal':
                     normalParams.classList.add('active');
                     break;
+                case 'gamma':
+                    gammaParams.classList.add('active');
+                    break;
             }
         } else {
             // Existing discrete distribution control logic
@@ -528,6 +568,7 @@ document.addEventListener('DOMContentLoaded', () => {
             uniformContinuousParams.classList.remove('active');
             exponentialParams.classList.remove('active');
             normalParams.classList.remove('active');
+            gammaParams.classList.remove('active');
             
             // Show appropriate discrete params
             switch (discreteDistType) {

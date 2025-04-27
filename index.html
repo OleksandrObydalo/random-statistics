@@ -36,6 +36,7 @@
                     <option value="uniform">Uniform</option>
                     <option value="exponential">Exponential</option>
                     <option value="normal">Normal</option>
+                    <option value="gamma">Gamma</option>
                 </select>
             </div>
 
@@ -106,6 +107,18 @@
                 <div class="control-group">
                     <label for="normal-sigma">Standard Deviation (σ):</label>
                     <input type="number" id="normal-sigma" value="1" min="0.1" step="0.1">
+                </div>
+            </div>
+
+            <div id="gamma-params" class="distribution-params">
+                <div class="control-group">
+                    <label for="gamma-n">Shape parameter (n):</label>
+                    <input type="number" id="gamma-n" value="2" min="1" step="1">
+                </div>
+                
+                <div class="control-group">
+                    <label for="gamma-alpha">Rate parameter (α):</label>
+                    <input type="number" id="gamma-alpha" value="1" min="0.1" step="0.1">
                 </div>
             </div>
             

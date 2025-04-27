@@ -207,3 +207,13 @@ svg {
     gap: 15px;
     flex-wrap: wrap;
 }
+
+#gamma-params {
+    display: none;
+}
+
+#gamma-params.active {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
