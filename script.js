@@ -255,7 +255,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Draw histogram
     function drawHistogram() {
         const distributionType = distributionTypeSelect.value;
         const binWidth = parseFloat(binWidthInput.value) || 10;
@@ -270,18 +269,23 @@ document.addEventListener('DOMContentLoaded', () => {
         const min = Math.min(...generatedNumbers);
         const max = Math.max(...generatedNumbers);
 
-        // Adjust bin width and number of bins for continuous distribution
+        // Adjust bin width calculation for continuous and discrete distributions
         const binWidthAdjusted = distributionType === 'discrete' ? 
-            binWidth : 
-            (max - min) / 20; // Default to 20 bins for continuous
+            Math.max(1, Math.round(binWidth)) :  // Ensure at least 1 for discrete
+            binWidth;  // Allow fractional bin widths for continuous
 
-        // Create bins
-        const numBins = Math.ceil((max - min) / binWidthAdjusted);
+        // Create bins with more flexible logic
+        const numBins = distributionType === 'discrete' ? 
+            Math.ceil((max - min) / binWidthAdjusted) : 
+            Math.ceil((max - min) / binWidthAdjusted) + 1;
+
         const bins = Array(numBins).fill(0);
         
         generatedNumbers.forEach(num => {
             const binIndex = Math.floor((num - min) / binWidthAdjusted);
-            bins[binIndex]++;
+            if (binIndex >= 0 && binIndex < numBins) {
+                bins[binIndex]++;
+            }
         });
 
         const xScale = d3.scaleLinear()
@@ -293,7 +297,7 @@ document.addEventListener('DOMContentLoaded', () => {
             .range([height, 0])
             .nice();
 
-        // Draw bars
+        // Draw bars with precise positioning
         g.selectAll('.bar')
             .data(bins)
             .enter()
