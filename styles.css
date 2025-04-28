@@ -165,6 +165,26 @@ svg {
     font-size: 14px;
 }
 
+.probability-metrics {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 5px;
+    margin-top: 20px;
+    border: 1px solid #ddd;
+}
+
+.probability-output {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.probability-output p {
+    margin: 0;
+    font-size: 14px;
+}
+
 .distribution-params {
     display: none;
     margin-bottom: 15px;

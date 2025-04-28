@@ -289,6 +289,11 @@ document.addEventListener('DOMContentLoaded', () => {
             // Show floating-point numbers with 3 decimal places
             numbersOutput.textContent = generatedNumbers.map(num => num.toFixed(3)).join(', ');
         }
+
+        // Add probability calculation section after first generation
+        if (!document.getElementById('probability-section')) {
+            createProbabilitySection();
+        }
     }
 
     function drawHistogram() {
@@ -599,6 +604,154 @@ document.addEventListener('DOMContentLoaded', () => {
             minInput.value = Math.floor(parseFloat(minInput.value));
             maxInput.value = Math.ceil(parseFloat(maxInput.value));
         }
+    }
+
+    // New function to calculate probability for the selected distribution
+    function calculateProbability(min, max) {
+        const distributionType = distributionTypeSelect.value;
+        
+        if (generatedNumbers.length === 0) {
+            alert('Generate numbers first!');
+            return null;
+        }
+
+        // Experimental probability calculation
+        const experimentalProbability = generatedNumbers.filter(num => 
+            num >= min && num <= max
+        ).length / generatedNumbers.length;
+
+        // Theoretical probability calculation
+        let theoreticalProbability = null;
+
+        if (distributionType === 'discrete') {
+            const discreteDistType = discreteDistributionTypeSelect.value;
+            
+            switch (discreteDistType) {
+                case 'uniform':
+                    const uniformMin = parseInt(minInput.value);
+                    const uniformMax = parseInt(maxInput.value);
+                    const totalRange = uniformMax - uniformMin + 1;
+                    theoreticalProbability = Math.max(0, Math.min(max, uniformMax) - Math.max(min, uniformMin) + 1) / totalRange;
+                    break;
+                
+                case 'bernoulli':
+                    const p = parseFloat(document.getElementById('bernoulli-p').value);
+                    theoreticalProbability = (max >= 1 && min <= 1) ? p : 
+                        (max < 1 ? 1 - p : 0);
+                    break;
+                
+                case 'binomial':
+                    const n = parseInt(document.getElementById('binomial-n').value);
+                    const binomialP = parseFloat(document.getElementById('binomial-p').value);
+                    
+                    theoreticalProbability = 0;
+                    for (let k = Math.ceil(min); k <= Math.floor(max); k++) {
+                        theoreticalProbability += binomialCoefficient(n, k) * 
+                            Math.pow(binomialP, k) * 
+                            Math.pow(1 - binomialP, n - k);
+                    }
+                    break;
+                
+                case 'poisson':
+                    const lambda = parseFloat(document.getElementById('poisson-lambda').value);
+                    
+                    theoreticalProbability = 0;
+                    for (let k = Math.ceil(min); k <= Math.floor(max); k++) {
+                        theoreticalProbability += Math.pow(lambda, k) * 
+                            Math.exp(-lambda) / factorial(k);
+                    }
+                    break;
+            }
+        } else {
+            // Continuous distribution theoretical probability
+            const continuousDistType = continuousDistributionTypeSelect.value;
+            
+            switch (continuousDistType) {
+                case 'uniform':
+                    const contMin = parseFloat(document.getElementById('continuous-min').value);
+                    const contMax = parseFloat(document.getElementById('continuous-max').value);
+                    theoreticalProbability = (Math.min(max, contMax) - Math.max(min, contMin)) / (contMax - contMin);
+                    break;
+                
+                case 'exponential':
+                    const lambda = parseFloat(document.getElementById('exponential-lambda').value);
+                    // F(x) = 1 - e^(-λx)
+                    theoreticalProbability = Math.max(0, 
+                        (1 - Math.exp(-lambda * max)) - 
+                        (1 - Math.exp(-lambda * min))
+                    );
+                    break;
+                
+                case 'normal':
+                    const mean = parseFloat(document.getElementById('normal-mean').value);
+                    const sigma = parseFloat(document.getElementById('normal-sigma').value);
+                    
+                    // Use error function for normal distribution CDF
+                    const normalCDF = (x) => 0.5 * (1 + Math.erf((x - mean) / (sigma * Math.sqrt(2))));
+                    theoreticalProbability = normalCDF(max) - normalCDF(min);
+                    break;
+                
+                case 'gamma':
+                    const n = parseFloat(document.getElementById('gamma-n').value);
+                    const alpha = parseFloat(document.getElementById('gamma-alpha').value);
+                    
+                    // Gamma distribution CDF approximation
+                    const gammaCDF = (x) => {
+                        // Incomplete gamma function approximation
+                        let result = 0;
+                        for (let i = 0; i < n; i++) {
+                            result += Math.pow(alpha * x, i) / factorial(i);
+                        }
+                        return 1 - Math.exp(-alpha * x) * result;
+                    };
+                    
+                    theoreticalProbability = gammaCDF(max) - gammaCDF(min);
+                    break;
+            }
+        }
+
+        return {
+            experimentalProbability,
+            theoreticalProbability
+        };
+    }
+
+    // Add probability calculation section to HTML
+    function createProbabilitySection() {
+        const probabilitySection = document.createElement('div');
+        probabilitySection.id = 'probability-section';
+        probabilitySection.classList.add('probability-metrics');
+        probabilitySection.innerHTML = `
+            <h2>Probability Calculation</h2>
+            <div class="control-group">
+                <label for="prob-min">Interval Minimum:</label>
+                <input type="number" id="prob-min" step="any" value="0">
+                
+                <label for="prob-max">Interval Maximum:</label>
+                <input type="number" id="prob-max" step="any" value="1">
+                
+                <button id="calculate-probability">Calculate Probability</button>
+            </div>
+            <div id="probability-output" class="probability-output"></div>
+        `;
+
+        const statisticalMetrics = document.querySelector('.statistical-metrics');
+        statisticalMetrics.appendChild(probabilitySection);
+
+        // Add event listener for probability calculation
+        document.getElementById('calculate-probability').addEventListener('click', () => {
+            const probMin = parseFloat(document.getElementById('prob-min').value);
+            const probMax = parseFloat(document.getElementById('prob-max').value);
+            
+            const probabilityResult = calculateProbability(probMin, probMax);
+            
+            if (probabilityResult) {
+                document.getElementById('probability-output').innerHTML = `
+                    <p>Experimental Probability: ${(probabilityResult.experimentalProbability * 100).toFixed(2)}%</p>
+                    <p>Theoretical Probability: ${(probabilityResult.theoreticalProbability * 100).toFixed(2)}%</p>
+                `;
+            }
+        });
     }
 
     // Event listeners
